@@ -1,0 +1,66 @@
+{
+ "name": "Hebrish speech datasets",
+ "owner": "Daniel Rosehill",
+ "default_speaker": "Daniel Rosehill",
+ "collection": "https://huggingface.co/collections/Hebrish/parakeet-v2-fine-tune-training-data-6ad63c739d300685a62edb3e",
+ "note": "One speaker read-aloud takes recorded on a phone (16 kHz WAV). Splits are term-disjoint: test never shares a target term with train.",
+ "sources": [
+  {
+   "repo": "danielrosehill/Read-Aloud-Voice-Sentences",
+   "title": "Read-Aloud Voice Sentences (master)",
+   "note": "Every take and every category, including the task categories (currency, acronyms, disfluency, ...), which exist only here until their own datasets are created; reach them with the category filter. The other sources are copies of parts of this one (phone takes only), so use either the master or the subsets, or keep dedupe on.",
+   "gated": true
+  },
+  {
+   "repo": "danielrosehill/English-Hebrew-Codeswitching-Sentences",
+   "title": "English-Hebrew Code-Switching Sentences",
+   "note": "Rows of the master whose `categories` include `code_switch`.",
+   "gated": true
+  },
+  {
+   "repo": "danielrosehill/Tech-Sentences",
+   "title": "Tech Sentences",
+   "note": "Rows of the master whose `categories` include `tech` and not `code_switch`."
+  },
+  {
+   "repo": "danielrosehill/AI-Interactions-Sentences",
+   "title": "AI Interactions Sentences",
+   "note": "Rows of the master whose `categories` include `ai_interactions` and not `code_switch`."
+  },
+  {
+   "repo": "danielrosehill/Linux-Admin-Sentences",
+   "title": "Linux Admin Sentences",
+   "note": "Rows of the master whose `categories` include `linux` and not `code_switch`."
+  },
+  {
+   "repo": "danielrosehill/Smart-Home-Sentences",
+   "title": "Smart Home Sentences",
+   "note": "Rows of the master whose `categories` include `smart_home` and not `code_switch`."
+  },
+  {
+   "repo": "danielrosehill/Personal-Vocabulary-Sentences",
+   "title": "Personal Vocabulary Sentences",
+   "note": "Rows of the master whose `categories` include `personal` and not `code_switch`."
+  },
+  {
+   "repo": "danielrosehill/Homophone-Context-Sentences",
+   "title": "Homophone Context Sentences",
+   "note": "Rows of the master whose `categories` include `homophone` and not `code_switch`."
+  },
+  {
+   "repo": "Hebrish/Yiddish-Sentences",
+   "title": "Yiddish Sentences",
+   "note": "Rows of the master whose `categories` include `yiddish`."
+  },
+  {
+   "repo": "Hebrish/Jewish-Religious-Terminology-Sentences",
+   "title": "Jewish Religious Terminology Sentences",
+   "note": "Rows of the master whose `categories` include `religious`."
+  },
+  {
+   "repo": "danielrosehill/General-English-Sentences",
+   "title": "General English Sentences",
+   "note": "Rows of the master whose `categories` include none of `code_switch`, `tech`, `names`, `personal` and `yiddish`, and that are not from a task dataset (disfluency, self-corrections, asides, hard-asr, brand-names, acronyms, irish-english, repetitions, singing, weird-voices, currency, paragraphs, expanded-acronyms)."
+  }
+ ]
+}

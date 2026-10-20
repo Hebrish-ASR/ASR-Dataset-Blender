@@ -1,0 +1,11 @@
+{
+ "name": "cs-like-r6",
+ "sources": [
+  {"repo": "danielrosehill/English-Hebrew-Codeswitching-Sentences"},
+  {"repo": "danielrosehill/General-English-Sentences", "share": 0.2},
+  {"repo": "danielrosehill/Tech-Sentences", "share": 0.1}
+ ],
+ "filters": {"speakers": ["Daniel Rosehill"], "default_speaker": "Daniel Rosehill"},
+ "held_out": {"mode": "source", "val_pct": 6.25, "group_by": "id"},
+ "seed": 7
+}
