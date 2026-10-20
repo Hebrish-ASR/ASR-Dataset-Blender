@@ -6,7 +6,7 @@
 from pathlib import Path
 from huggingface_hub import HfApi
 
-SPACE = "Hebrish/ASR-Dataset-Blender"
+SPACE = "danielrosehill/ASR-Dataset-Blender"
 ROOT = Path(__file__).resolve().parent.parent
 api = HfApi()
 api.create_repo(SPACE, repo_type="space", space_sdk="gradio", exist_ok=True)

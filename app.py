@@ -46,7 +46,7 @@ def scan(table, oauth_token: gr.OAuthToken | None = None):
         sp = i["splits"]
         r[4] = sp.get("train", {}).get("min")
         r[5] = sum(v["min"] for k, v in sp.items() if k != "train")
-        r[6] = "ok @ " + i["sha"][:8]
+        r[6] = ("ok @ " if sp else "empty (nothing published yet) @ ") + i["sha"][:8]
         for c, m in i["categories"].items():
             cats[c] = max(cats.get(c, 0), m)
         for s, m in i["speakers"].items():

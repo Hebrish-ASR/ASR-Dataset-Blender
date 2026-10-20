@@ -21,7 +21,7 @@ Pick speech datasets from a library, filter them, hold out validation and test d
 much each source contributes, and download the blend: NeMo manifests, a NeMo Lhotse
 `input_cfg.yaml`, a reproducible recipe, and a script that fetches the audio.
 
-- **Space (demo):** <https://huggingface.co/spaces/Hebrish/ASR-Dataset-Blender>
+- **Space (demo):** <https://huggingface.co/spaces/danielrosehill/ASR-Dataset-Blender>
 - **Library:** the datasets in [`library.json`](library.json), all recorded by Daniel Rosehill for the
   [English-Hebrew code-switching Parakeet fine-tune](https://github.com/Hebrish-ASR/English-Hebrew-Codeswitching-Parakeet-Finetune)
   ([collection](https://huggingface.co/collections/Hebrish/parakeet-v2-fine-tune-training-data-6ad63c739d300685a62edb3e)).
@@ -45,6 +45,12 @@ recording all of that with every source pinned to a commit so the blend can be r
 Its output feeds NeMo directly, either as one shuffled `train.jsonl` or as `input_cfg.yaml`.
 
 ## Cost and access
+
+The Space is on Daniel's personal account, not in the `Hebrish` org where the other project
+Spaces are. On 2026-10-20, creating it in `Hebrish` returned HTTP 402: *"hosting Gradio and Docker
+Spaces on free cpu-basic requires a Team or Enterprise plan for organization Hebrish"*. Only
+static Spaces are free in an org. Personal accounts still get free cpu-basic. Moving it to the
+org means either paying for Team or rewriting the UI as a static (browser-only) Space.
 
 The Space runs on free CPU (`cpu-basic`). It reads only each source's `metadata.jsonl` (a few MB);
 the audio is downloaded by `fetch_audio.py` on the user's own machine. It calls no inference API,
@@ -139,7 +145,7 @@ It uses `HF_TOKEN` or the cached `hf auth login`.
 `app.py` is the Gradio front end for the same `blender.core`. Run it locally with
 `uv pip install "gradio[oauth]==6.29.0" huggingface_hub && python app.py`. Locally, sign-in is
 mocked and the cached token is used. Deploy by uploading the repo (minus `.venv`, `tests`) to the
-Space `Hebrish/ASR-Dataset-Blender`. `scripts/deploy_space.py` does this.
+Space `danielrosehill/ASR-Dataset-Blender`. `scripts/deploy_space.py` does this.
 
 ## Adding a dataset to the library
 
