@@ -2,9 +2,14 @@
 validation and test, size each source (all, a minutes cap, or a share of the total), and write
 NeMo manifests plus a reproducible recipe. Reads only metadata.jsonl, never audio.
 
-Source layout (the Hugging Face "audiofolder" layout every dataset in library.json uses):
-  data/<split>/metadata.jsonl   one JSON row per clip: file_name, text, duration_s, id, ...
-  data/<split>/<file_name>      the audio, fetched later by the bundle's fetch_audio.py
+Source layouts (either, per pinned commit):
+  Hugging Face "audiofolder" (the Hebrish datasets before 2026-10-30, and any older commit of them):
+    data/<split>/metadata.jsonl   one JSON row per clip: file_name, text, duration_s, id, ...
+    data/<split>/<file_name>      the audio, fetched later by the bundle's fetch_audio.py
+  Parquet (the Hebrish datasets on main since 2026-10-30; present once meta/schema.json exists):
+    meta/<split>.jsonl            the same rows, `audio_path` in place of `file_name`, plus `shard` and
+                                  `audio_offset` / `audio_length`: the audio file's byte range in the shard
+    data/<split>-*.parquet        the shards; fetch_audio.py downloads the ones a blend needs and cuts the files out
 """
 import hashlib, io, json, random, zipfile
 from collections import defaultdict
@@ -35,10 +40,18 @@ def mins(rows):
 
 
 def resolve(repo, revision="main", token=None):
-    """Pin a revision to a commit sha and list the splits that have a metadata.jsonl."""
+    """Pin a revision to a commit sha and list its splits: meta/<split>.jsonl (Parquet layout), else the
+    data/<split>/ folders (audiofolder)."""
     api = HfApi(token=token)
     try:
         sha = api.dataset_info(repo, revision=revision).sha
+        try:
+            meta = list(api.list_repo_tree(repo, path_in_repo="meta", repo_type="dataset", revision=sha))
+        except EntryNotFoundError:
+            meta = []
+        if any(p.path == "meta/schema.json" for p in meta):
+            splits = sorted(p.path[5:-6] for p in meta if p.path.endswith(".jsonl") and p.path.count("/") == 1)
+            return sha, splits
         try:
             tree = list(api.list_repo_tree(repo, path_in_repo="data", repo_type="dataset", revision=sha))
         except EntryNotFoundError:
@@ -54,11 +67,17 @@ def load_rows(repo, sha, split, token=None):
     key = (repo, sha, split)
     if key not in _CACHE:
         try:
-            p = hf_hub_download(repo, f"data/{split}/metadata.jsonl", repo_type="dataset", revision=sha, token=token)
+            try:
+                p = hf_hub_download(repo, f"meta/{split}.jsonl", repo_type="dataset", revision=sha, token=token)
+            except EntryNotFoundError:
+                p = hf_hub_download(repo, f"data/{split}/metadata.jsonl", repo_type="dataset", revision=sha, token=token)
         except GatedRepoError as e:
             raise AccessError(f"{repo}: gated; request access at https://huggingface.co/datasets/{repo}") from e
         rows = [json.loads(l) for l in open(p, encoding="utf-8") if l.strip()]
         for r in rows:
+            if "shard" in r:  # Parquet index row: the file's original name and where it sits in its shard
+                r["file_name"] = r.pop("audio_path")
+                r["_shard"], r["_offset"], r["_length"] = r.pop("shard"), r.pop("audio_offset"), r.pop("audio_length")
             r.setdefault("id", Path(r["file_name"]).stem)
         _CACHE[key] = rows
     return _CACHE[key]
@@ -261,6 +280,9 @@ def manifest_row(r, text_field):
     row = {"audio_filepath": _local_path(r), "duration": r["duration_s"],
            "text": r.get(text_field) or r.get("text", ""), "id": r["id"], "source": r["_source"],
            "audio_url": f"https://huggingface.co/datasets/{r['_source']}/resolve/{r['_sha']}/data/{r['_split_src']}/{r['file_name']}"}
+    if r.get("_shard"):  # Parquet source: the file is bytes [offset, offset + length) of this shard
+        row["audio_url"] = f"https://huggingface.co/datasets/{r['_source']}/resolve/{r['_sha']}/{r['_shard']}"
+        row["audio_offset"], row["audio_length"] = r["_offset"], r["_length"]
     if r.get("_repeat"):
         row["repeat"] = r["_repeat"]
     for k, v in r.items():  # keep the source's own metadata (categories, speaker, target_terms, ...)

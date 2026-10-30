@@ -52,7 +52,7 @@ Spaces on free cpu-basic requires a Team or Enterprise plan for organization Heb
 static Spaces are free in an org. Personal accounts still get free cpu-basic. Moving it to the
 org means either paying for Team or rewriting the UI as a static (browser-only) Space.
 
-The Space runs on free CPU (`cpu-basic`). It reads only each source's `metadata.jsonl` (a few MB);
+The Space runs on free CPU (`cpu-basic`). It reads only each source's metadata (`meta/<split>.jsonl` or `metadata.jsonl`, a few MB);
 the audio is downloaded by `fetch_audio.py` on the user's own machine. It calls no inference API,
 so nobody's blend costs the Space owner anything.
 
@@ -62,13 +62,26 @@ who can blend which rows. A visitor without access sees "no access" for that sou
 
 ## Source layout
 
-Every source must use the Hugging Face audiofolder layout:
+A source uses one of two layouts, decided per pinned commit. The Hugging Face audiofolder layout:
 
 ```
 data/<split>/metadata.jsonl   # one row per clip: file_name, text, duration_s (required); id,
                               # categories, speaker, target_terms (used when present)
 data/<split>/<file_name>      # the audio
 ```
+
+Or the Parquet layout the Hebrish datasets moved to on 2026-10-30 (recognised by `meta/schema.json`;
+older commits of those datasets stay audiofolders):
+
+```
+meta/<split>.jsonl            # the same rows, `audio_path` in place of `file_name`, plus `shard` and
+                              # `audio_offset` / `audio_length` (the audio file's byte range in it)
+data/<split>-*.parquet        # the shards, audio embedded verbatim
+```
+
+For a Parquet source a manifest row's `audio_url` is the shard and it carries `audio_offset` /
+`audio_length`; `fetch_audio.py` downloads only the shards a blend uses and cuts the files out to the
+same `audio_filepath` an audiofolder source gets.
 
 `id` defaults to the file name's stem. A row with no `speaker` is taken to be the library's
 `default_speaker`.

@@ -77,3 +77,13 @@ def test_bundle_contents():
     first = json.loads(z.read("manifests/train.jsonl").splitlines()[0])
     assert first["audio_filepath"].startswith("audio/a__") and "/resolve/" + "f" * 40 in first["audio_url"]
     assert json.loads(z.read("blend.json"))["recipe"]["sources"][0]["revision"] == "f" * 40
+
+
+def test_parquet_source_rows_point_into_their_shard():
+    r = {"id": "p1", "text": "t", "duration_s": 2.0, "file_name": "audio/p1.wav", "_source": "a/pq", "_sha": "f" * 40,
+         "_split_src": "train", "_shard": "data/train-00000.parquet", "_offset": 1234, "_length": 5678}
+    row = core.manifest_row(r, "text")
+    assert row["audio_filepath"] == "audio/a__pq/data/train/audio/p1.wav"
+    assert row["audio_url"].endswith("/resolve/" + "f" * 40 + "/data/train-00000.parquet")
+    assert (row["audio_offset"], row["audio_length"]) == (1234, 5678)
+    assert not any(k.startswith("_") or k in ("shard", "audio_path") for k in row)

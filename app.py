@@ -1,5 +1,6 @@
 """Gradio front end for blender.core (the Hugging Face Space). Runs on free CPU: it reads only
-metadata.jsonl files and never touches audio, so a blend costs nothing to whoever hosts it.
+metadata files (metadata.jsonl, or the Parquet index meta/<split>.jsonl) and never touches audio, so a
+blend costs nothing to whoever hosts it.
 
 Gated sources are read with the visitor's own token from "Sign in with Hugging Face"
 (hf_oauth in README.md), never with a token stored in the Space, so gating still decides who
